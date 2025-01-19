@@ -1,7 +1,8 @@
 {
   "name": "serverless-fullstack",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "frontend-dev": "npm run dev --workspace=@sf/frontend",
+    "deploy": "cd infrastructure; cdk deploy"
   },
   "workspaces": [
     "apps/frontend",

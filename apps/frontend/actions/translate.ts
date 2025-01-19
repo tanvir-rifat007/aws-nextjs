@@ -1,10 +1,18 @@
 "use server";
 
+import { TranslateRequest, TranslateResponse } from "@sf/shared-types";
+
 export const postTranslate = async (
   sourceLang: string,
   outputLang: string,
   text: string
 ) => {
+  const request: TranslateRequest = {
+    sourceLang,
+    targetLang: outputLang,
+    sourceText: text,
+  };
+
   const response = await fetch(
     "https://scixng8mid.execute-api.eu-north-1.amazonaws.com/prod",
     {
@@ -12,11 +20,7 @@ export const postTranslate = async (
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        sourceLang,
-        outputLang,
-        text,
-      }),
+      body: JSON.stringify(request),
     }
   );
 
@@ -26,5 +30,5 @@ export const postTranslate = async (
     throw new Error("Translation request failed");
   }
 
-  return await response.json(); // Parse the JSON response
+  return (await response.json()) as TranslateResponse;
 };

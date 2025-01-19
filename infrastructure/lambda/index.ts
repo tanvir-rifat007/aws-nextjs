@@ -5,13 +5,9 @@ import {
 
 import * as lambda from "aws-lambda";
 
-const translateClient = new TranslateClient({});
+import { TranslateRequest, TranslateResponse } from "@sf/shared-types";
 
-type TranslateTextEvent = {
-  sourceLang: string;
-  outputLang: string;
-  text: string;
-};
+const translateClient = new TranslateClient({});
 
 export const translateText: lambda.APIGatewayProxyHandler = async (
   event: lambda.APIGatewayProxyEvent
@@ -28,12 +24,12 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
       };
     }
 
-    const body: TranslateTextEvent = JSON.parse(event.body);
+    const body: TranslateRequest = JSON.parse(event.body);
 
     const translateCmd = new TranslateTextCommand({
       SourceLanguageCode: body.sourceLang,
-      TargetLanguageCode: body.outputLang,
-      Text: body.text,
+      TargetLanguageCode: body.targetLang,
+      Text: body.sourceText,
     });
 
     const translatedText = await translateClient.send(translateCmd);
@@ -46,14 +42,19 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
       "Access-Control-Allow-Methods": "POST",
     };
 
+    if (!translatedText.TranslatedText) {
+      return null;
+    }
+
+    const response: TranslateResponse = {
+      message: "Hello from Lambda!",
+      translatedText: translatedText.TranslatedText,
+    };
+
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({
-        message: "Hello from Lambda!",
-
-        translatedText: translatedText.TranslatedText,
-      }),
+      body: JSON.stringify(response),
     };
   } catch (err: any) {
     return {
