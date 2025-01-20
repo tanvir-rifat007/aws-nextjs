@@ -3,14 +3,36 @@ import {
   TranslateTextCommand,
 } from "@aws-sdk/client-translate";
 
+import * as dynamodb from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+
 import * as lambda from "aws-lambda";
 
-import { TranslateRequest, TranslateResponse } from "@sf/shared-types";
+import {
+  TranslateDbObject,
+  TranslateRequest,
+  TranslateResponse,
+} from "@sf/shared-types";
+
+const { TRANSLATION_TABLE_NAME, TRANSLATION_PARTITION_KEY } = process.env;
+
+console.log(
+  "TRANSLATION_TABLE_NAME:",
+  TRANSLATION_TABLE_NAME,
+  "TRANSLATION_PARTITION_KEY:",
+  TRANSLATION_PARTITION_KEY
+);
+
+if (!TRANSLATION_TABLE_NAME || !TRANSLATION_PARTITION_KEY) {
+  throw new Error("Missing environment variables");
+}
 
 const translateClient = new TranslateClient({});
+const dynamodbClient = new dynamodb.DynamoDBClient({});
 
 export const translateText: lambda.APIGatewayProxyHandler = async (
-  event: lambda.APIGatewayProxyEvent
+  event: lambda.APIGatewayProxyEvent,
+  context: lambda.Context
 ) => {
   console.log("Incoming Request Body:", event.body);
 
@@ -50,6 +72,22 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
       message: "Hello from Lambda!",
       translatedText: translatedText.TranslatedText,
     };
+
+    // save to the dynamodb table
+    const tableObj: TranslateDbObject = {
+      requestId: context.awsRequestId,
+      ...body,
+      ...response,
+    };
+
+    const tableInsertCmd: dynamodb.PutItemCommandInput = {
+      TableName: TRANSLATION_TABLE_NAME,
+      // wrapping the object in the marshall function to convert it to the dynamodb format
+      Item: marshall(tableObj),
+    };
+
+    // save the object to the dynamodb table
+    await dynamodbClient.send(new dynamodb.PutItemCommand(tableInsertCmd));
 
     return {
       statusCode: 200,

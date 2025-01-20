@@ -1,0 +1,11 @@
+{
+  "name": "@sf/translate",
+  "main": "index.ts",
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.731.1",
+    "@aws-sdk/util-dynamodb": "^3.731.1",
+    "@sf/shared-types": "*",
+    "@types/node": "22.5.4",
+    "ts-node": "^10.9.2"
+  }
+}

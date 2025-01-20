@@ -8,3 +8,8 @@ export type TranslateResponse = {
   message: string;
   translatedText: string;
 };
+
+export type TranslateDbObject = TranslateRequest &
+  TranslateResponse & {
+    requestId: string;
+  };
