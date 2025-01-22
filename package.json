@@ -3,7 +3,8 @@
   "scripts": {
     "frontend-dev": "npm run dev --workspace=@sf/frontend",
     "deploy": "cd infrastructure; cdk deploy",
-    "build-utils-lambda-layers":"npm run build --workspace=@sf/utils-lambda-layers"
+    "build-utils-lambda-layers": "npm run build --workspace=@sf/utils-lambda-layers",
+    "watch-utils-lambda-layers": "npm run watch --workspace=@sf/utils-lambda-layers"
   },
   "workspaces": [
     "apps/frontend",

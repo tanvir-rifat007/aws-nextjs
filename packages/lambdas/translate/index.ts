@@ -8,7 +8,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import * as lambda from "aws-lambda";
 
-import { gateway } from "/opt/nodejs/utils-lambda-layers";
+import { gateway, getTranslation } from "/opt/nodejs/utils-lambda-layers";
 
 import {
   TranslateDbObject,
@@ -29,7 +29,7 @@ if (!TRANSLATION_TABLE_NAME || !TRANSLATION_PARTITION_KEY) {
   throw new Error("Missing environment variables");
 }
 
-const translateClient = new TranslateClient({});
+// const translateClient = new TranslateClient({});
 const dynamodbClient = new dynamodb.DynamoDBClient({});
 
 export const translateText: lambda.APIGatewayProxyHandler = async (
@@ -50,15 +50,13 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
 
     const body: TranslateRequest = JSON.parse(event.body);
 
-    const translateCmd = new TranslateTextCommand({
-      SourceLanguageCode: body.sourceLang,
-      TargetLanguageCode: body.targetLang,
-      Text: body.sourceText,
-    });
+    // const translateCmd = new TranslateTextCommand({
+    //   SourceLanguageCode: body.sourceLang,
+    //   TargetLanguageCode: body.targetLang,
+    //   Text: body.sourceText,
+    // });
 
-    const translatedText = await translateClient.send(translateCmd);
-
-    console.log(translatedText);
+    // const translatedText = await translateClient.send(translateCmd);
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
@@ -66,13 +64,21 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
       "Access-Control-Allow-Methods": "POST",
     };
 
-    if (!translatedText.TranslatedText) {
-      return null;
+    const translatedText = await getTranslation(body);
+
+    if (!translatedText) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          error: "Translation failed",
+        }),
+      };
     }
 
     const response: TranslateResponse = {
       message: "Hello from Lambda!",
-      translatedText: translatedText.TranslatedText,
+      translatedText,
     };
 
     // save to the dynamodb table

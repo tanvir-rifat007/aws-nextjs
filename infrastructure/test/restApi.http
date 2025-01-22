@@ -7,7 +7,7 @@ Content-Type: application/json
 {
     "sourceLang": "en",
     "targetLang": "bn",
-    "sourceText": "I want to be a successful person and I believe I can do it and Allah will help me."
+    "sourceText": "Hello, how are you?"
 }
 
 ###

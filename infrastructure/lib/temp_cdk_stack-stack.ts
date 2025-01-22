@@ -34,6 +34,19 @@ export class TempCdkStackStack extends cdk.Stack {
       path.join("../", "packages/lambdas/translate/index.ts")
     );
 
+    // lambda layers path:
+    const lambdaLayersPath = path.resolve(
+      path.join("../", "packages/lambda-layers/utils-lambda-layers")
+    );
+
+    console.log(lambdaLayersPath);
+
+    const lambdaLayer = new lambda.LayerVersion(this, "utilsLambdaLayer", {
+      code: lambda.Code.fromAsset(lambdaLayersPath),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     // post lambda function
     const postLambda = new lambdaNodejs.NodejsFunction(
       this,
@@ -43,6 +56,7 @@ export class TempCdkStackStack extends cdk.Stack {
         handler: "translateText",
         entry: lambdasDirPath,
         initialPolicy: [translateAccessPolicy],
+        layers: [lambdaLayer],
         environment: {
           TRANSLATION_TABLE_NAME: table.tableName,
           TRANSLATION_PARTITION_KEY: "requestId",
@@ -65,6 +79,7 @@ export class TempCdkStackStack extends cdk.Stack {
         handler: "getTranslations",
         entry: lambdasDirPath,
         initialPolicy: [translateAccessPolicy],
+        layers: [lambdaLayer],
         environment: {
           TRANSLATION_TABLE_NAME: table.tableName,
           TRANSLATION_PARTITION_KEY: "requestId",
