@@ -1,6 +1,7 @@
 "use client";
 
 import { postTranslate } from "@/actions/translate";
+import { getTranslations } from "@/utils/translation";
 import { useState, useTransition } from "react";
 
 const HomePage = () => {
@@ -9,6 +10,7 @@ const HomePage = () => {
   const [sourceLang, setSourceLang] = useState("");
   const [targetLang, setTargetLang] = useState("");
   const [result, setResult] = useState("");
+  const [getAllTranslations, setAllTranslations] = useState([]);
   return (
     <>
       <input
@@ -43,6 +45,18 @@ const HomePage = () => {
       </button>
 
       <p>{result}</p>
+
+      <button
+        type="button"
+        onClick={() => {
+          startTransition(async () => {
+            const res = await getTranslations();
+            console.log(res);
+          });
+        }}
+      >
+        {isPending ? "Loading..." : "Get all translations"}
+      </button>
     </>
   );
 };

@@ -2,7 +2,8 @@
   "name": "serverless-fullstack",
   "scripts": {
     "frontend-dev": "npm run dev --workspace=@sf/frontend",
-    "deploy": "cd infrastructure; cdk deploy"
+    "deploy": "cd infrastructure; cdk deploy",
+    "build-utils-lambda-layers":"npm run build --workspace=@sf/utils-lambda-layers"
   },
   "workspaces": [
     "apps/frontend",

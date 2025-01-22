@@ -14,7 +14,7 @@ export const postTranslate = async (
   };
 
   const response = await fetch(
-    "https://scixng8mid.execute-api.eu-north-1.amazonaws.com/prod",
+    "https://nwtw317ise.execute-api.eu-north-1.amazonaws.com/prod/",
     {
       method: "POST",
       headers: {

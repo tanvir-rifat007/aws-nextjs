@@ -8,6 +8,8 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import * as lambda from "aws-lambda";
 
+import { gateway } from "/opt/nodejs/utils-lambda-layers";
+
 import {
   TranslateDbObject,
   TranslateRequest,
@@ -89,22 +91,45 @@ export const translateText: lambda.APIGatewayProxyHandler = async (
     // save the object to the dynamodb table
     await dynamodbClient.send(new dynamodb.PutItemCommand(tableInsertCmd));
 
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(response),
-    };
+    return gateway.createSucessJsonResponse(response);
   } catch (err: any) {
-    return {
-      statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST",
-      },
-      body: JSON.stringify({
-        error: err.message,
-      }),
+    return gateway.createErrorResponse(err);
+  }
+};
+
+export const getTranslations: lambda.APIGatewayProxyHandler = async (
+  event: lambda.APIGatewayProxyEvent,
+  context: lambda.Context
+) => {
+  try {
+    const scanCmd: dynamodb.ScanCommandInput = {
+      TableName: TRANSLATION_TABLE_NAME,
     };
+
+    const { Items } = await dynamodbClient.send(
+      new dynamodb.ScanCommand(scanCmd)
+    );
+
+    if (!Items) {
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Methods": "GET",
+        },
+        body: JSON.stringify([]),
+      };
+    }
+
+    const translations = Items.map(
+      (item) => unmarshall(item) as TranslateDbObject
+    );
+
+    console.log("Translations:", translations);
+
+    return gateway.createSucessJsonResponse(translations);
+  } catch (err: any) {
+    return gateway.createErrorResponse(err);
   }
 };

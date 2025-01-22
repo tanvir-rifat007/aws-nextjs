@@ -28,13 +28,16 @@ export class TempCdkStackStack extends cdk.Stack {
       resources: ["*"],
     });
 
+    const api = new apiGateway.RestApi(this, "MyApiGatewayUsingNodejs");
+
     const lambdasDirPath = path.resolve(
       path.join("../", "packages/lambdas/translate/index.ts")
     );
 
-    const lambdaFunc = new lambdaNodejs.NodejsFunction(
+    // post lambda function
+    const postLambda = new lambdaNodejs.NodejsFunction(
       this,
-      "MyLambdaUsingNodejs",
+      "PostTranslateLambda",
       {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "translateText",
@@ -48,11 +51,31 @@ export class TempCdkStackStack extends cdk.Stack {
     );
 
     // grant the lambda function read/write access to the dynamodb table
-    table.grantReadWriteData(lambdaFunc);
-
-    const api = new apiGateway.RestApi(this, "MyApiGatewayUsingNodejs");
+    table.grantReadWriteData(postLambda);
 
     // adding a lambda integration to the apiGateway
-    api.root.addMethod("POST", new apiGateway.LambdaIntegration(lambdaFunc));
+    api.root.addMethod("POST", new apiGateway.LambdaIntegration(postLambda));
+
+    // get lambda function
+    const getLambda = new lambdaNodejs.NodejsFunction(
+      this,
+      "GetTranslationsLambda",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        handler: "getTranslations",
+        entry: lambdasDirPath,
+        initialPolicy: [translateAccessPolicy],
+        environment: {
+          TRANSLATION_TABLE_NAME: table.tableName,
+          TRANSLATION_PARTITION_KEY: "requestId",
+        },
+      }
+    );
+
+    // grant the lambda function read access to the dynamodb table
+    table.grantReadData(getLambda);
+
+    // adding a lambda integration to the apiGateway
+    api.root.addMethod("GET", new apiGateway.LambdaIntegration(getLambda));
   }
 }

@@ -1,4 +1,4 @@
-@URL=https://scixng8mid.execute-api.eu-north-1.amazonaws.com/prod/
+@URL=https://nwtw317ise.execute-api.eu-north-1.amazonaws.com/prod/
 
 
 POST {{URL}} HTTP/1.1
@@ -6,6 +6,10 @@ Content-Type: application/json
 
 {
     "sourceLang": "en",
-    "outputLang": "bn",
-    "text": "Hello World"
+    "targetLang": "bn",
+    "sourceText": "I want to be a successful person and I believe I can do it and Allah will help me."
 }
+
+###
+
+GET {{URL}} HTTP/1.1
