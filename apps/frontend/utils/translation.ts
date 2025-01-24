@@ -13,11 +13,14 @@ export const getTranslations = memoize(
       throw new Error("Failed to fetch translations");
     }
 
-    return (await response.json()) as TranslateDbObject[];
+    const data = (await response.json()) as TranslateDbObject[];
+    console.log(data);
+
+    return data;
   },
   {
     persist: true,
     log: ["datacache", "dedupe", "verbose"],
-    logid: "getTranslations",
+    revalidateTags: ["translations"],
   }
 );

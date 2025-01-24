@@ -1,6 +1,7 @@
 "use server";
 
 import { TranslateRequest, TranslateResponse } from "@sf/shared-types";
+import { revalidateTag } from "next/cache";
 
 export const postTranslate = async (
   sourceLang: string,
@@ -29,6 +30,8 @@ export const postTranslate = async (
   if (!response.ok) {
     throw new Error("Translation request failed");
   }
+
+  revalidateTag("translations");
 
   return (await response.json()) as TranslateResponse;
 };
